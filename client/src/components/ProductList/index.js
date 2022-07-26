@@ -26,6 +26,15 @@ function ProductList() {
       data.products.forEach((product) => {
         idbPromise('products', 'put', product)
       })
+    } else if(!loading) {
+      // get all of the data from the 'products' store since we're offline
+      idbPromise('products', 'get').then((products) => {
+        // use retrieved data to set global state for offloine brwosing
+        dispatch({
+          type: UPDATE_PRODUCTS,
+          products: products
+        })
+      })
     }
   }, [data, loading, dispatch]);
 

@@ -28,30 +28,46 @@ export function idbPromise(storeName, method, object) {
       console.log('There was an error')
     }
 
-    switch(method) {
-      case 'put':
-        store.put(object)
-        resolve(object)
-        break;
-      
-      case 'get':
-        const all = store.getAll()
-        all.onsuccess = function() {
-          resolve(all.result)
-        }
-        break;
-      
-      case 'delete':
-        store.delete(object._id)
-        break;
-      
-      default:
-        console.log('No valid method')
-        break;
-      }
+    // on database open success
+request.onsuccess = function(e) {
+  // save a reference of the database to the `db` variable
+  db = request.result;
+  // open a transaction do whatever we pass into `storeName` (must match one of the object store names)
+  tx = db.transaction(storeName, 'readwrite');
+  // save a reference to that object store
+  store = tx.objectStore(storeName);
 
-    tx.oncomplete = function() {
-      db.close()
-    }
+  // if there's any errors, let us know
+  db.onerror = function(e) {
+    console.log('error', e);
+  };
+
+
+  switch (method) {
+    case 'put':
+      store.put(object);
+      resolve(object);
+      break;
+    case 'get':
+      const all = store.getAll();
+      all.onsuccess = function() {
+        resolve(all.result);
+      };
+      break;
+    case 'delete':
+      store.delete(object._id);
+      break;
+    default:
+      console.log('No valid method');
+      break;
+  }
+  // when the transaction is complete, close the connection
+  tx.oncomplete = function() {
+    db.close();
+  };
+};
+    
+
+    
   })
 }
