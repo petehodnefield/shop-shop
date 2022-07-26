@@ -6,6 +6,7 @@ import { useStoreContext } from '../../utils/GlobalState';
 import { UPDATE_PRODUCTS } from '../../utils/actions';
 import { QUERY_PRODUCTS } from '../../utils/queries';
 import spinner from '../../assets/spinner.gif';
+import {idbPromise} from '../../utils/helpers'
 
 function ProductList() {
   const [state, dispatch] = useStoreContext();
@@ -20,8 +21,13 @@ function ProductList() {
         type: UPDATE_PRODUCTS,
         products: data.products,
       });
+       
+      // let's also take each product and save it to indexedDB using helper
+      data.products.forEach((product) => {
+        idbPromise('products', 'put', product)
+      })
     }
-  }, [data, dispatch]);
+  }, [data, loading, dispatch]);
 
   function filterProducts() {
     if (!currentCategory) {
